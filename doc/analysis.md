@@ -42,7 +42,8 @@ Používajú sa len semafory so smerovými signálmi, čo znamená, že vozidlá
 ## 3.2. Nastavenie fáz semaforov
 → Používateľ nastavuje pre každý jazdný pruh práve jeden časový interval (fáza) v sekundách, kedy je na tomto semafore rozsvietená zelená → keď nesvieti zelená, svieti červená.
 → Križovatku riadi cyklus, ktorý sa opakuje.
-→ Dĺžka cyklu je automaticky vypočítaná z najvačšej hodnoty konca signálu voľno v rámci celej križovatky.
+→ Dĺžka cyklu je automaticky vypočítaná z najvačšej hodnoty konca signálu voľno v rámci celej križovatky.<br> 
+
 <img src="fazy_priklad.png" alt="Povolená konfigurácia jazdných pruhov">
 
 
