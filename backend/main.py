@@ -6,6 +6,11 @@ from models import SemaphoreUpdate
 from database import update_semaphore_state
 from simulation import run_simulation
 from fastapi import WebSocket
+from models import IntersectionConfig
+from database import save_generated_intersection
+from models import IntersectionConfig
+from database import save_generated_intersection
+
 import json
 import asyncio
 
@@ -40,5 +45,10 @@ async def websocket_state(websocket: WebSocket):
             await websocket.send_text(intersection.json())
             await asyncio.sleep(1)
     except WebSocketDisconnect:
-        print("🔌 Klient sa odpojil od WebSocketu.")
+        print("🔌 Klient sa dsaodpojil od WebSocketu.")
 
+
+@app.post("/api/configure")
+def configure_intersection(config: IntersectionConfig):
+    save_generated_intersection(config)
+    return {"message": "Križovatka nakonfigurovaná."}
