@@ -6,7 +6,7 @@ Simulácia sa zameriava na riadenie dopravy na klasickej križovatke v tvare **+
 
 Simulácia počíta so štyrmi smermi (vetvami): **Sever, Juh, Východ, Západ**. Všetky štyri smery majú **3** jazdné pruhy (nie všetky musia byť aktívne).
 
-Aplikácia funguje na princípe 2 typov správ, kedy používateľ najprv vytvorí križovatku, teda nastavenia jazdných pruhov pomocou checkoxov. 
+Simulátor funguje na princípe 2 typov správ, kedy používateľ najprv vytvorí križovatku, teda nastavenia jazdných pruhov pomocou checkoxov. 
 Keď je vytvorená križovatka, následne nastavuje, kedy majú semafory zobrazovať signál Voľno.
 
 
@@ -48,39 +48,21 @@ Používajú sa len semafory so smerovými signálmi, čo znamená, že vozidlá
 
 
 ## 3.3. Zakázané fázové kombinácie
-→ Fázy musia byť nastavené tak, aby počas simulácie nedošlo ku kolízií - križovaniu voľných smerov.
-→ Počas celého cyklu nesmú byť nastavené nasledovné kombinácie na ktoromkoľvek z pruhov celej križovatke:
+→ Fázy musia byť nastavené tak, aby počas simulácie nedošlo ku kolízií - križovaniu voľných smerov.<br> 
+→ Počas celého cyklu nesmú byť nastavené nasledovné kombinácie na ktoromkoľvek z pruhov v celej križovatke:
 | Voľno  <br> (v ktoromkoľvek z pruhov) | Obmedzenia       |
 |---------|------------------|
 |↑        | - náprotivná vetva nesmie mať voľno vľavo<br> - vetva po pravej strane nesmie mať voľno v žiadnom smere<br> - vetva po ľavej strane nesmie mať voľno vľavo alebo priamo|
 |←        | - náprotivná vetva nesmie mať voľno vpravo alebo priamo<br> - vetva po pravej strane nesmie mať voľno priamo alebo vľavo<br> - vetva po ľavej strane nesmie mať voľno vľavo alebo priamo|
-|→        | - náprotivná vetva nesmie mať voľno vľavo<br> -vetva po ľavej strane nesmie mať voľno priamo|
+|→        | - náprotivná vetva nesmie mať voľno vľavo<br> - vetva po ľavej strane nesmie mať voľno priamo|
 
 
-## 4. Komunikácia frontend – backend – simulácia
+## 4.1. Komunikácia Frontend - Backend
 
-Frontend a backend komunikujú prostredníctvom dvoch hlavných JSON správ:
 
----
-
-#### 1. Správa: Vytvorenie križovatky (definícia pruhov)
+Správa na vytvorenie križovatky (definícia pruhov)
 
 Táto správa sa odošle po nakonfigurovaní pruhov pomocou checkboxov.
-
-#### Štruktúra:
-```json
-{
-  "intersection": {
-    "north": [ "left", "straight", "right" ],
-    "south": [ "left", "straight" ],
-    "east": [],
-    "west": [ "straight", "right" ]
-  }
-}
-```
-
-#### 2. Správa: Nastavenie fáz semaforov
-Odosiela sa po zadefinovaní časov, kedy majú pruhy zelenú.
 
 Štruktúra:
 ```json
@@ -98,6 +80,34 @@ Odosiela sa po zadefinovaní časov, kedy majú pruhy zelenú.
       "straight": { "start": 11, "end": 20 }
     },
     "west": {}
+  }
+}
+```
+
+
+## 4.2. Komunikácia Backend - Simulátor
+Štruktúra:
+```json
+{
+  "signals": {
+    "north": [
+      { "lane": 0, "direction": "left", "active": true },
+      { "lane": 1, "direction": "straight", "active": false },
+      { "lane": 2, "direction": "right", "active": true }
+    ],
+    "south": [],
+    "east": [],
+    "west": []
+  }
+}
+```
+```json
+{
+  "intersection": {
+    "north": [ "left", "straight", "right" ],
+    "south": [ "left", "straight" ],
+    "east": [],
+    "west": [ "straight", "right" ]
   }
 }
 ```
