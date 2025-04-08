@@ -45,7 +45,7 @@ async def websocket_state(websocket: WebSocket):
             await websocket.send_text(intersection.json())
             await asyncio.sleep(1)
     except WebSocketDisconnect:
-        print("🔌 Klient sa odpojil od WebSocketu.")
+        print("🔌 Klient sa dsaodpojil od WebSocketu.")
 
 
 @app.post("/api/configure")
