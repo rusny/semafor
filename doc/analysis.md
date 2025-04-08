@@ -12,8 +12,8 @@ Keď je vytvorená križovatka, následne nastavuje, kedy majú semafory zobrazo
 
 ## 2. Nastavenie pruhov
 Používateľ môže pomocou checkboxov pre každý pruh zvoliť, akým smerom tento pruh pokračuje.
-Je možné v jazdnom pruhu nevybrať žiaden povolený smer jazdy - v takomto prípade sa tento pruh nepoužíva. 
-   → Jazdný pruh, v ktorom je zvolený v checkboxe aspoň 1 smer budeme označovať ako **Aktívny pruh**.
+Je možné v jazdnom pruhu nevybrať žiaden povolený smer jazdy - v takomto prípade sa tento pruh nepoužíva. <br> 
+→ Jazdný pruh, v ktorom je zvolený v checkboxe aspoň 1 smer budeme označovať ako **Aktívny pruh**.
 
 
 Základným obmedzením je, že **2 susedné aktívne pruhy** sa nemôžu križovať. 
@@ -34,14 +34,14 @@ Základným obmedzením je, že **2 susedné aktívne pruhy** sa nemôžu križo
 
 ## 3.1. Semafory
 
-Používajú sa len semafory so smerovými signálmi, čo znamená, že vozidlá nedávajú nikomu prednosť, križovanie voľných smerov je neprípustné.
-→ Neuvažujeme s oranžovým signálom.
+Používajú sa len semafory so smerovými signálmi, čo znamená, že vozidlá nedávajú nikomu prednosť, križovanie voľných smerov je neprípustné.<br> 
+→ Neuvažujeme s oranžovým signálom.<br> 
 → Semafor (a teda aj signál na ňom) sa vždy vzťahuje k jazdným jednotlivým aktívnym pruhom.
 
 
 ## 3.2. Nastavenie fáz semaforov
-→ Používateľ nastavuje pre každý jazdný pruh práve jeden časový interval (fáza) v sekundách, kedy je na tomto semafore rozsvietená zelená → keď nesvieti zelená, svieti červená.
-→ Križovatku riadi cyklus, ktorý sa opakuje.
+→ Používateľ nastavuje pre každý jazdný pruh práve jeden časový interval (fáza) v sekundách, kedy je na tomto semafore rozsvietená zelená → keď nesvieti zelená, svieti červená.<br> 
+→ Križovatku riadi cyklus, ktorý sa opakuje.<br> 
 → Dĺžka cyklu je automaticky vypočítaná z najvačšej hodnoty konca signálu voľno v rámci celej križovatky.<br> 
 
 <img src="fazy_priklad.png" alt="Povolená konfigurácia jazdných pruhov">
