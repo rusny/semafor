@@ -1,54 +1,43 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from database import get_intersection_data
-from models import Intersection
-from models import SemaphoreUpdate
-from database import update_semaphore_state
-from simulation import run_simulation
-from fastapi import WebSocket
-from models import IntersectionConfig
-from database import save_generated_intersection
-from models import IntersectionConfig
-from database import save_generated_intersection
+from websocket_server import IntersectionWebSocketServer
+from restapi_server import fastApi
+import sys
+import signal
+import threading
+import uvicorn
+from simulation import Simulation
+import os
 
-import json
-import asyncio
+if __name__ == "__main__":
+    terminateEvent = threading.Event()
+    websocketServer = IntersectionWebSocketServer(host='0.0.0.0', port=9000)
+    websocketServer.start()
 
-app = FastAPI()
+    def signal_handler(sig, frame):
+        print("SIGTERM received, shutting down...")
+        websocketServer.stop()
+        terminateEvent.set()
+        sys.exit(0)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    signal.signal(signal.SIGTERM, signal_handler)
+    
+    # Nastavenie ciest k priečinkom
+    current_dir = os.path.dirname(os.path.abspath(__file__))  # backend priečinok
+    parent_dir = os.path.dirname(current_dir)  # koreňový priečinok
+    frontend_dir = os.path.join(parent_dir, 'frontend')  # frontend priečinok
+    
+    # Nastavenie statických súborov
+    fastApi.state.frontend_dir = frontend_dir
+    fastApi.state.simulation = Simulation(websocketServer)
+    
+    # Spustenie FastAPI
+    uvicorn.run(fastApi, host="0.0.0.0", port=8080)
 
-
-@app.get("/api/state", response_model=Intersection)
-def get_state():
-    return get_intersection_data()
-
-
-@app.put("/api/semaphore/{semaphore_id}")
-def set_semaphore_state(semaphore_id: str, update: SemaphoreUpdate):
-    return update_semaphore_state(semaphore_id, update.state)
-
-
-run_simulation()
-
-@app.websocket("/ws/state")
-async def websocket_state(websocket: WebSocket):
-    await websocket.accept()
     try:
-        while True:
-            intersection = get_intersection_data()
-            await websocket.send_text(intersection.json())
-            await asyncio.sleep(1)
-    except WebSocketDisconnect:
-        print("🔌 Klient sa dsaodpojil od WebSocketu.")
+        terminateEvent.wait()
+    except KeyboardInterrupt:
+        # Extra poistka pre prípad, že zachytávač signálov neuspeje
+        print("Keyboard interrupt received, shutting down...")
+        websocketServer.stop()
 
-
-@app.post("/api/configure")
-def configure_intersection(config: IntersectionConfig):
-    save_generated_intersection(config)
-    return {"message": "Križovatka nakonfigurovaná."}
+    print("Server has been shut down successfully")
+    

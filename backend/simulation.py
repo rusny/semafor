@@ -1,43 +1,73 @@
 import threading
 import time
-from pymongo import MongoClient
-
-client = MongoClient("mongodb://localhost:27017")
-db = client["traffic_db"]
-collection = db["intersections"]
+import json
+from websocket_server import IntersectionWebSocketServer
+from schemas import Intersection
 
 
-def run_simulation():
-    def loop():
-        while True:
-            intersection = collection.find_one({"_id": "intersection_1"})
-            if not intersection:
-                time.sleep(1)
-                continue
+class Simulation:
+    def __init__(self, websocketServer: IntersectionWebSocketServer):
+        self.intersection = Intersection()
+        self.current_time = 0
+        self.simulation_thread = None
+        self.stop_event = threading.Event()
+        self.websocketServer = websocketServer
+        self.simulation_speed = 1.0  # Sekundy reálneho času na 1 sekundu simulácie
 
-            current_time = intersection["cycle"]["current_time_in_cycle"]
-            duration = intersection["cycle"]["cycle_duration"]
-            schedule = intersection["cycle"]["schedule"]
+    def update_intersection(self, intersection: Intersection):
+        """Aktualizácia konfigurácie intersection"""
+        self.intersection = intersection
+        self.current_time = 0
 
-            # Zvýš čas
-            next_time = (current_time + 1) % duration
+    def simulate_step(self):
+        """Vykonanie jedného kroku simulácie"""
+        if self.intersection.cycle_length == 0:
+            return  # Nie je čo simulovať
+            
+        # Získanie stavu semaforov pre aktuálny čas
+        signals = self.intersection.get_signals_at_time(self.current_time)
+        
+        # Vytvorenie dátovej štruktúry pre websocket
+        data = {
+            "method": "signals_update",
+            "time": self.current_time,
+            "signals": signals,
+            "cycle_length": self.intersection.cycle_length
+        }
+        
+        # Odoslanie dát cez websocket
+        self.websocketServer.send_data(json.dumps(data))
+        
+        # Inkrementácia času simulácie
+        self.current_time = (self.current_time + 1) % self.intersection.cycle_length
 
-            # Zisti, či máme zmeniť stav semaforov
-            for action in schedule:
-                if action["at"] == next_time:
-                    for sem_id, new_state in action["set_states"].items():
-                        collection.update_one(
-                            {"_id": "intersection_1", "semaphores.id": sem_id},
-                            {"$set": {"semaphores.$.state": new_state}}
-                        )
+    def simulation_loop(self):
+        """Hlavná slučka simulácie"""
+        while not self.stop_event.is_set():
+            self.simulate_step()
+            time.sleep(self.simulation_speed)
 
-            # Ulož nový čas
-            collection.update_one(
-                {"_id": "intersection_1"},
-                {"$set": {"cycle.current_time_in_cycle": next_time}}
-            )
+    def start_simulation(self):
+        """Spustenie simulácie v samostatnom vlákne"""
+        if self.simulation_thread is not None and self.simulation_thread.is_alive():
+            # Simulácia už beží
+            return
+            
+        self.stop_event.clear()
+        self.simulation_thread = threading.Thread(target=self.simulation_loop)
+        self.simulation_thread.daemon = True
+        self.simulation_thread.start()
+        print("Simulation started")
 
-            time.sleep(1)
+    def stop_simulation(self):
+        """Zastavenie simulácie"""
+        if self.simulation_thread is not None:
+            self.stop_event.set()
+            self.simulation_thread.join(timeout=5)
+            self.simulation_thread = None
+            print("Simulation stopped")
 
-    thread = threading.Thread(target=loop, daemon=True)
-    thread.start()
+    def set_simulation_speed(self, speed: float):
+        """Nastavenie rýchlosti simulácie"""
+        if speed > 0:
+            self.simulation_speed = speed
