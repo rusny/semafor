@@ -9,14 +9,15 @@ import os
 
 if __name__ == "__main__":
     terminateEvent = threading.Event()
-    websocketServer = IntersectionWebSocketServer(host='0.0.0.0', port=9000)
+    # Upravený port pre WebSocket na 9005 podľa nginx konfigurácie
+    websocketServer = IntersectionWebSocketServer(host='0.0.0.0', port=9005)
     websocketServer.start()
 
     def signal_handler(sig, frame):
         print("SIGTERM received, shutting down...")
         websocketServer.stop()
         terminateEvent.set()
-        sys.exit(0)
+        # Odstránené sys.exit(0)
 
     signal.signal(signal.SIGTERM, signal_handler)
     
@@ -29,15 +30,27 @@ if __name__ == "__main__":
     fastApi.state.frontend_dir = frontend_dir
     fastApi.state.simulation = Simulation(websocketServer)
     
-    # Spustenie FastAPI
-    uvicorn.run(fastApi, host="0.0.0.0", port=8080)
+    # Spustenie FastAPI v samostatnom vlákne s portom 8085 podľa nginx konfigurácie
+    fastapi_thread = threading.Thread(
+        target=uvicorn.run,
+        args=(fastApi,),
+        kwargs={"host": "0.0.0.0", "port": 8085}
+    )
+    fastapi_thread.daemon = True
+    fastapi_thread.start()
 
     try:
+        # Čakanie na ukončenie programu
         terminateEvent.wait()
+        
+        # Čakanie na dokončenie všetkých vlákien
+        if fastapi_thread.is_alive():
+            print("Čakanie na ukončenie FastAPI servera...")
+            fastapi_thread.join(timeout=5)
+            
     except KeyboardInterrupt:
-        # Extra poistka pre prípad, že zachytávač signálov neuspeje
         print("Keyboard interrupt received, shutting down...")
         websocketServer.stop()
+        terminateEvent.set()
 
     print("Server has been shut down successfully")
-    
