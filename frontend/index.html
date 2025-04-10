@@ -1,46 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sk">
 <head>
-  <meta charset="UTF-8">
-  <title>Križovatka – Semafory</title>
-  <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 40px; }
-    .semaphore { display: inline-block; margin: 20px; text-align: center; }
-    .light {
-      width: 60px; height: 60px;
-      border-radius: 50%;
-      background-color: grey;
-      margin: 10px auto;
-    }
-    .green { background-color: green; }
-    .yellow { background-color: gold; }
-    .red { background-color: red; }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Simulácia semaforov</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>🟢 Riadenie semaforov</h1>
-  <div id="semaphores"></div>
+  <h1>Simulácia križovatky so semaformi</h1>
 
-  <script>
-    const ws = new WebSocket("ws://localhost:8000/ws/state");
+  <label for="type">Počet smerov (1–3):</label>
+  <input type="number" id="type" value="1" min="1" max="3" />
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      const semaphores = data.semaphores;
+  <br/><br/>
 
-      const container = document.getElementById("semaphores");
-      container.innerHTML = "";
+  <label for="cycle">Dĺžka cyklu (s):</label>
+  <input type="number" id="cycle" value="60" min="10" />
 
-      semaphores.forEach(s => {
-        const div = document.createElement("div");
-        div.className = "semaphore";
-        div.innerHTML = `
-          <div>${s.id}</div>
-          <div class="light ${s.state}"></div>
-        `;
-        container.appendChild(div);
-      });
-    };
-  </script>
+  <br/><br/>
+
+  <label for="variant">Typ križovatky:</label>
+  <select id="variant">
+    <option value="1-semafor">1 semafor</option>
+    <option value="2-semafor" selected>2 semafory</option>
+    <option value="3-semafor">3 semafory</option>
+  </select>
+
+  <br/><br/>
+
+  <button onclick="configureIntersection()">Generovať</button>
+
+  <br/><br/>
+
+  <canvas id="intersection" width="500" height="500" style="border:1px solid #ccc;"></canvas>
+
+  <script src="script.js"></script>
 </body>
 </html>
