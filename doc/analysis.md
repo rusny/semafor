@@ -26,11 +26,11 @@ Základným obmedzením je, že **2 susedné aktívne pruhy** sa nemôžu križo
 |→|↑|
 
 
-<img src="intersection_checkboxes_priklad_zakazany_cropped.png" alt="Zakázaná konfigurácia jazdných pruho" width="280">
-<img src="intersection_checkboxes_priklad_zakazany2_cropped.png" alt="Zakázaná konfigurácia jazdných pruho" width="170">
+<img src="assets/intersection_checkboxes_priklad_zakazany_cropped.png" alt="Zakázaná konfigurácia jazdných pruho" width="280">
+<img src="assets/intersection_checkboxes_priklad_zakazany2_cropped.png" alt="Zakázaná konfigurácia jazdných pruho" width="170">
 
-<img src="intersection_checkboxes_priklad_povoleny_cropped.png" alt="Povolená konfigurácia jazdných pruhov" width="200">
-<img src="intersection_checkboxes_priklad_povoleny2_cropped.png" alt="Povolená konfigurácia jazdných pruhov" width="170">
+<img src="assets/intersection_checkboxes_priklad_povoleny_cropped.png" alt="Povolená konfigurácia jazdných pruhov" width="200">
+<img src="assets/intersection_checkboxes_priklad_povoleny2_cropped.png" alt="Povolená konfigurácia jazdných pruhov" width="170">
 
 ## 3.1. Semafory
 
@@ -44,7 +44,7 @@ Používajú sa len semafory so smerovými signálmi, čo znamená, že vozidlá
 → Križovatku riadi cyklus, ktorý sa opakuje.<br> 
 → Dĺžka cyklu je automaticky vypočítaná z najvačšej hodnoty konca signálu voľno v rámci celej križovatky.<br> 
 
-<img src="fazy_priklad.png" alt="Povolená konfigurácia jazdných pruhov">
+<img src="assets/fazy_priklad.png" alt="Povolená konfigurácia jazdných pruhov">
 
 
 ## 3.3. Zakázané fázové kombinácie
