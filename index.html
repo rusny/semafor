@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulácia križovatky</title>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --panel-bg: #ffffff;
+      --accent: #2c7be5;
+      --green: #28a745;
+      --red: #dc3545;
+      --text: #333333;
+      --border: #dddddd;
+      --radius: 8px;
+      --gap: 1rem;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: var(--gap);
+    }
+    h1 { margin-bottom: var(--gap); text-align: center; }
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto 200px;
+      grid-template-areas:
+        "controls visualization"
+        "logs logs";
+      gap: var(--gap);
+    }
+    .controls {
+      grid-area: controls;
+      background: var(--panel-bg);
+      padding: var(--gap);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow-y: auto;
+      max-height: 600px;
+    }
+    .visualization {
+      grid-area: visualization;
+      background: var(--panel-bg);
+      padding: var(--gap);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: grid;
+      grid-template-areas:
+        ". north ."
+        "west center east"
+        ". south .";
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr 1fr;
+      align-items: center;
+      justify-items: center;
+      position: relative;
+    }
+    .north { grid-area: north; }
+    .south { grid-area: south; }
+    .west  { grid-area: west; }
+    .east  { grid-area: east; }
+    .center { grid-area: center; font-size: 1.25rem; color: var(--border); }
+    .direction-group { margin-bottom: var(--gap); }
+    .direction-group h3 { margin-bottom: 0.5rem; color: var(--accent); }
+    .lane-config {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .lane-config span { width: 60px; }
+    .radios label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px; height: 32px;
+      margin-right: 0.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .radios input { display: none; }
+    .radios input:checked + label {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .intervals input {
+      width: 60px;
+      padding: 0.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-right: 0.5rem;
+    }
+    #sendBtn {
+      display: block;
+      margin: var(--gap) auto 0;
+      padding: 0.75rem 1.5rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #sendBtn:hover { background: darken(var(--accent), 10%); }
+    #status {
+      margin-top: var(--gap);
+      text-align: center;
+      font-weight: bold;
+    }
+    .logs {
+      grid-area: logs;
+      background: #1e1e1e;
+      color: #eee;
+      padding: var(--gap);
+      border-radius: var(--radius);
+      font-family: monospace;
+      overflow-y: auto;
+    }
+    .arrow {
+      font-size: 1.5rem;
+      margin: 0 0.25rem;
+      transition: color 0.2s, opacity 0.2s;
+    }
+    .green { color: var(--green); opacity: 1; }
+    .red   { color: var(--red); opacity: 0.3; }
+  </style>
+</head>
+<body>
+  <h1>Simulácia križovatky</h1>
+  <div class="container">
+    <div class="controls" id="controls"></div>
+    <div class="visualization">
+      <div class="north" id="viz-north"></div>
+      <div class="west" id="viz-west"></div>
+      <div class="center">+</div>
+      <div class="east" id="viz-east"></div>
+      <div class="south" id="viz-south"></div>
+    </div>
+    <div class="logs" id="logs"></div>
+  </div>
+
+  <button id="sendBtn">Odoslať konfiguráciu</button>
+  <div id="status"></div>
+
+  <script>
+    const API = 'http://localhost:8085';
+    const WS  = 'ws://localhost:9005';
+    const dirs = ['north','east','south','west'];
+    const names= {north:'Sever',east:'Východ',south:'Juh',west:'Západ'};
+    const symbols = {left:'←',straight:'↑',right:'→'};
+    const controls = document.getElementById('controls');
+    const statusEl = document.getElementById('status');
+    const logs = document.getElementById('logs');
+    let socket;
+
+    function log(msg) {
+      logs.textContent += msg + '\n';
+      logs.scrollTop = logs.scrollHeight;
+    }
+
+    function buildControls() {
+      dirs.forEach(dir => {
+        const grp = document.createElement('div'); grp.className='direction-group';
+        grp.innerHTML = `<h3>${names[dir]}</h3>`;
+        for(let i=1;i<=3;i++){
+          const lane = document.createElement('div'); lane.className='lane-config';
+          lane.innerHTML = `<span>Pruh ${i}:</span>`;
+          const rad = document.createElement('div'); rad.className='radios';
+          ['left','straight','right'].forEach(d=>{
+            const ri = document.createElement('input');
+            ri.type='radio'; ri.name=`${dir}-${i}`; ri.id=`${dir}-${i}-${d}`; ri.value=d;
+            const rl = document.createElement('label');
+            rl.htmlFor = ri.id; rl.textContent = symbols[d];
+            rad.append(ri,rl);
+          });
+          const iv = document.createElement('div'); iv.className='intervals';
+          iv.innerHTML = `Od: <input type="number" id="${dir}-${i}-from" min="0" placeholder="0"> ` +
+                         `Do: <input type="number" id="${dir}-${i}-to" min="0" placeholder="0">`;
+          lane.append(rad, iv);
+          grp.append(lane);
+        }
+        controls.append(grp);
+      });
+    }
+
+    function gatherConfig(){
+      const conf = {phases:{}};
+      dirs.forEach(dir=>{
+        conf.phases[dir]={};
+        for(let i=1;i<=3;i++){
+          const sel = document.querySelector(`input[name='${dir}-${i}']:checked`);
+          if(sel){
+            const d = sel.value;
+            const f = parseInt(document.getElementById(`${dir}-${i}-from`).value)||0;
+            const t = parseInt(document.getElementById(`${dir}-${i}-to`).value)||0;
+            conf.phases[dir][d] = {start:f,end:t};
+          }
+        }
+      });
+      return conf;
+    }
+
+    async function sendConfig(){
+      const cfg = gatherConfig();
+      statusEl.textContent = 'Odosielam...';
+      try{
+        const resp = await fetch(API+'/set_phases',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
+        const data = await resp.json();
+        if(data.success){ statusEl.textContent='Simulácia beží'; connectWS(); }
+        else{ statusEl.textContent='Chyba: '+data.message; }
+        log('Sent: '+JSON.stringify(cfg));
+      } catch(e){ statusEl.textContent='Chyba pri odoslaní'; log(e); }
+    }
+
+    function connectWS(){
+      socket = new WebSocket(WS);
+      socket.onopen = ()=> log('WebSocket pripojený');
+      socket.onmessage = e=>{
+        log('Received: '+e.data);
+        const msg=JSON.parse(e.data);
+        updateViz(msg.signals);
+      };
+      socket.onclose = ()=> log('WebSocket uzavretý');
+      socket.onerror = err=> log('WS Error: '+err);
+    }
+
+    function updateViz(signals){
+      dirs.forEach(dir=>{
+        const area = document.getElementById('viz-'+dir);
+        area.innerHTML = '';
+        signals[dir].forEach(sig=>{
+          const a = document.createElement('span');
+          a.textContent = symbols[sig.direction];
+          a.className = 'arrow '+(sig.active?'green':'red');
+          area.append(a);
+        });
+      });
+    }
+
+    document.getElementById('sendBtn').addEventListener('click', sendConfig);
+    buildControls();
+  </script>
+</body>
+</html>
