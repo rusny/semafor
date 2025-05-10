@@ -1,5 +1,3 @@
-from websocket_server import IntersectionWebSocketServer
-from restapi_server import fastApi
 import sys
 import signal
 import threading
@@ -27,13 +25,13 @@ if __name__ == "__main__":
     frontend_dir = os.path.join(parent_dir, 'frontend')  # frontend priečinok
     
     # Nastavenie statických súborov
-    fastApi.state.frontend_dir = frontend_dir
-    fastApi.state.simulation = Simulation(websocketServer)
+    semaphoreApp.state.frontend_dir = frontend_dir
+    semaphoreApp.state.simulation = Simulation(websocketServer)
     
     # Spustenie FastAPI v samostatnom vlákne s portom 8085 podľa nginx konfigurácie
     fastapi_thread = threading.Thread(
         target=uvicorn.run,
-        args=(fastApi,),
+        args=(semaphoreApp,),
         kwargs={"host": "0.0.0.0", "port": 8085}
     )
     fastapi_thread.daemon = True
