@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <title>Konfigurácia križovatky</title>
+    <script src="configure.js" defer></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Konfigurácia križovatky</h1>
+
+    <form id="configForm" onsubmit="event.preventDefault(); submitConfiguration();">
+        <div class="branch-config">
+            <h2>North</h2>
+            <label>Left Start: <input type="number" id="north_left_start" min="0" value="0"></label>
+            <label>Left End: <input type="number" id="north_left_end" min="0" value="0"></label><br>
+            <label>Straight Start: <input type="number" id="north_straight_start" min="0" value="0"></label>
+            <label>Straight End: <input type="number" id="north_straight_end" min="0" value="0"></label><br>
+            <label>Right Start: <input type="number" id="north_right_start" min="0" value="0"></label>
+            <label>Right End: <input type="number" id="north_right_end" min="0" value="0"></label>
+        </div>
+
+        <div class="branch-config">
+            <h2>South</h2>
+            <label>Left Start: <input type="number" id="south_left_start" min="0" value="0"></label>
+            <label>Left End: <input type="number" id="south_left_end" min="0" value="0"></label><br>
+            <label>Straight Start: <input type="number" id="south_straight_start" min="0" value="0"></label>
+            <label>Straight End: <input type="number" id="south_straight_end" min="0" value="0"></label><br>
+            <label>Right Start: <input type="number" id="south_right_start" min="0" value="0"></label>
+            <label>Right End: <input type="number" id="south_right_end" min="0" value="0"></label>
+        </div>
+
+        <div class="branch-config">
+            <h2>East</h2>
+            <label>Left Start: <input type="number" id="east_left_start" min="0" value="0"></label>
+            <label>Left End: <input type="number" id="east_left_end" min="0" value="0"></label><br>
+            <label>Straight Start: <input type="number" id="east_straight_start" min="0" value="0"></label>
+            <label>Straight End: <input type="number" id="east_straight_end" min="0" value="0"></label><br>
+            <label>Right Start: <input type="number" id="east_right_start" min="0" value="0"></label>
+            <label>Right End: <input type="number" id="east_right_end" min="0" value="0"></label>
+        </div>
+
+        <div class="branch-config">
+            <h2>West</h2>
+            <label>Left Start: <input type="number" id="west_left_start" min="0" value="0"></label>
+            <label>Left End: <input type="number" id="west_left_end" min="0" value="0"></label><br>
+            <label>Straight Start: <input type="number" id="west_straight_start" min="0" value="0"></label>
+            <label>Straight End: <input type="number" id="west_straight_end" min="0" value="0"></label><br>
+            <label>Right Start: <input type="number" id="west_right_start" min="0" value="0"></label>
+            <label>Right End: <input type="number" id="west_right_end" min="0" value="0"></label>
+        </div>
+
+        <button type="submit">Odoslať konfiguráciu</button>
+    </form>
+</body>
+</html>
