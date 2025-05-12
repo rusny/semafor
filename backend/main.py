@@ -1,3 +1,5 @@
+from websocket_server import IntersectionWebSocketServer
+from restapi_server import semaphoreApp
 import sys
 import signal
 import threading
