@@ -42,17 +42,6 @@ h1 {
 #south { grid-area: south; }
 #east  { grid-area: east; }
 #west  { grid-area: west; }
-#center {
-    grid-area: center;
-    background-color: #999;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2em;
-    color: white;
-    font-weight: bold;
-}
 
 .signal {
     margin: 4px 0;
@@ -83,7 +72,9 @@ h1 {
 
 #intersection .branch .direction-list {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    flex-direction: row; /* z vertikálneho na horizontálne */
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap; /* ak je málo miesta, zalomí */
     text-align: center;
 }
